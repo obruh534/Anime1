@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic 2D Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            background: lightblue;
+            display: block;
+            margin: auto;
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Simple 2D Avoidance Game</h2>
+<p>Use left (←) and right (→) arrow keys to move the player.</p>
+
+<canvas id="gameCanvas" width="400" height="500"></canvas>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Player setup
+    const player = {
+        x: 175,
+        y: 450,
+        width: 50,
+        height: 50,
+        color: "red",
+        speed: 5
+    };
+
+    // Obstacle setup
+    const obstacles = [];
+    let gameOver = false;
+    let score = 0;
+
+    function createObstacle() {
+        let size = Math.random() * 50 + 20;
+        obstacles.push({ x: Math.random() * (canvas.width - size), y: 0, width: size, height: size, speed: 3 });
+    }
+
+    function updateGame() {
+        if (gameOver) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw player
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+
+        // Move and draw obstacles
+        obstacles.forEach((obs, index) => {
+            obs.y += obs.speed;
+            ctx.fillStyle = "black";
+            ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+            // Collision detection
+            if (
+                obs.x < player.x + player.width &&
+                obs.x + obs.width > player.x &&
+                obs.y < player.y + player.height &&
+                obs.y + obs.height > player.y
+            ) {
+                gameOver = true;
+                alert("Game Over! Your score: " + score);
+                location.reload();
+            }
+
+            // Remove off-screen obstacles and increase score
+            if (obs.y > canvas.height) {
+                obstacles.splice(index, 1);
+                score++;
+            }
+        });
+
+        requestAnimationFrame(updateGame);
+    }
+
+    function movePlayer(event) {
+        if (event.key === "ArrowLeft" && player.x > 0) {
+            player.x -= player.speed * 10;
+        } else if (event.key === "ArrowRight" && player.x + player.width < canvas.width) {
+            player.x += player.speed * 10;
+        }
+    }
+
+    document.addEventListener("keydown", movePlayer);
+
+    setInterval(createObstacle, 1000);
+    updateGame();
+</script>
+
+</body>
+</html>
